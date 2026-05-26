@@ -26,21 +26,23 @@ export function Sidebar() {
                 <div className="space-y-1">
                     {MOCK_CHANNELS.map((channel) => (
                         <button key={channel.id}
-                                className={`w-full text-left px-3 py-2.5 rounded-lg transition-all group border ${channel.isActive ? 'bg-white border-slate-200 shadow-sm' : 'border-transparent hover:bg-slate-100/50'}`}>
+                                className={`w-full text-left px-3 py-2.5 rounded-lg transition-all group border 
+                                    ${channel.isActive ? 'bg-white border-slate-200 shadow-sm' : 'border-transparent hover:bg-slate-100/50'}`}>
                             <div className="flex justify-between items-center mb-1.5">
                                 <span className="text-[11px] font-medium text-slate-500">{channel.repo}</span>
                                 {channel.unread > 0 && (
                                     <span
                                         className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-4.5 text-center">
-                    {channel.unread}
-                  </span>
+                                        {channel.unread}
+                                    </span>
                                 )}
                             </div>
                             <div className="flex gap-2 items-start">
                                 <span
                                     className={`mt-0.5 ${channel.isActive ? 'text-green-600' : 'text-slate-400'}`}><Icons.GitPullRequest/></span>
                                 <span
-                                    className={`text-[13px] leading-snug font-medium line-clamp-2 ${channel.isActive ? 'text-slate-900' : 'text-slate-600'}`}>{channel.title}</span>
+                                    className={`text-[13px] leading-snug font-medium line-clamp-2 
+                                        ${channel.isActive ? 'text-slate-900' : 'text-slate-600'}`}>{channel.title}</span>
                             </div>
                         </button>
                     ))}
