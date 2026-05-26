@@ -51,7 +51,8 @@ export function Sidebar() {
 
             <div className="h-14 px-4 border-t border-slate-200 flex items-center gap-3 bg-white">
                 <div
-                    className="w-7 h-7 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-[11px] font-bold text-indigo-700">TL
+                    className="w-7 h-7 rounded-full bg-indigo-100 border border-indigo-200 flex items-center 
+                        justify-center text-[11px] font-bold text-indigo-700">TL
                 </div>
                 <div className="flex flex-col">
                     <span className="text-[13px] font-medium text-slate-900 leading-tight">tech-lead (You)</span>

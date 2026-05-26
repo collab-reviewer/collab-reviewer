@@ -84,7 +84,8 @@ export function ChatPanel() {
                         ) : (
                             <div className="flex gap-3">
                                 <div
-                                    className="w-8 h-8 rounded-full border flex items-center justify-center text-[11px] font-bold shrink-0 mt-0.5 bg-indigo-100 border-indigo-200 text-indigo-700">
+                                    className="w-8 h-8 rounded-full border flex items-center justify-center text-[11px] 
+                                        font-bold shrink-0 mt-0.5 bg-indigo-100 border-indigo-200 text-indigo-700">
                                     {msg.avatar}
                                 </div>
                                 <div className="flex-1">
@@ -109,7 +110,8 @@ export function ChatPanel() {
                 {/* Menú de Comandos Flotante */}
                 {isCommandMode && (
                     <div
-                        className="absolute bottom-[105%] left-4 right-4 mb-2 bg-white border border-slate-200 shadow-lg rounded-lg overflow-hidden animate-in slide-in-from-bottom-2 duration-200 z-30">
+                        className="absolute bottom-[105%] left-4 right-4 mb-2 bg-white border 
+                            border-slate-200 shadow-lg rounded-lg overflow-hidden animate-in slide-in-from-bottom-2 duration-200 z-30">
                         <div
                             className="px-3 py-2 bg-slate-50 border-b border-slate-100 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
                             Available Commands
@@ -147,7 +149,8 @@ export function ChatPanel() {
 
                 {/* Input del Chat Global */}
                 <div
-                    className="border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-shadow bg-white shadow-sm">
+                    className="border border-slate-200 rounded-xl overflow-hidden 
+                        focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-shadow bg-white shadow-sm">
           <textarea
               id="global-chat-input"
               value={inputValue}
@@ -167,7 +170,8 @@ export function ChatPanel() {
                         <button
                             onClick={handleSend}
                             disabled={!inputValue.trim()}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 
+                                rounded-lg text-[12px] font-medium transition-colors flex items-center gap-1.5 shadow-sm disabled:opacity-50"
                         >
                             Comment
                         </button>
