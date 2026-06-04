@@ -1,12 +1,22 @@
 ﻿import { Icons } from "./icon";
-
-import { MOCK_CHANNELS } from "./MOCK-DATA";
+import { useState } from "react";
+import { usePullRequests } from "#/hooks/usePullRequests";
 
 // --------------------------------------------------------
 // 1. SIDEBAR (Lista de PRs activas)
 // --------------------------------------------------------
 
-export function Sidebar() {
+export function Sidebar({ onSelectPR }: { onSelectPR?: (prId: number) => void }) {
+    const [activePRId, setActivePRId] = useState<number | null>(null);
+    
+    // Fetch pull requests from database
+    const { data: pullRequests = [], isLoading } = usePullRequests();
+
+    const handleSelectPR = (prId: number) => {
+        setActivePRId(prId);
+        onSelectPR?.(prId);
+    };
+
     return (
         <div className="w-70 min-w-70 bg-slate-50 border-r border-slate-200 flex flex-col h-full shrink-0">
             <div className="h-14 px-4 border-b border-slate-200 flex items-center justify-between">

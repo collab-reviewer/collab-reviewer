@@ -47,7 +47,7 @@ export const INITIAL_MESSAGES = [
 export const INITIAL_INLINE_COMMENTS = [
     {
         id: 999, lineId: 'L16-add', author: "dev-juan", avatar: "DJ",
-        content: "Añadí la validación extra aquí. ¿Te parece bien manejarlo en esta capa o lo movemos al servicio?",
+        content: "I added the extra validation here. Do you think it’s okay to handle it in this layer, or should we move it to the service?",
         timestamp: "15 mins ago"
     }
 ];
