@@ -22,7 +22,7 @@ export function ChatPanel() {
             id: Date.now(),
             author: "tech-lead",
             avatar: "TL",
-            timestamp: "Just now",
+            timestamp: Date.now(),
         };
 
         if (text.startsWith('/')) {
@@ -78,7 +78,7 @@ export function ChatPanel() {
                                     <Icons.Info/>}</div>
                                 <div>
                                     <p className="text-[13px] font-medium text-slate-700">{msg.content}</p>
-                                    <span className="text-[11px] text-slate-400">{msg.timestamp}</span>
+                                    <span className="text-[11px] text-slate-400">{(Date.now() - msg.timestamp)}</span>
                                 </div>
                             </div>
                         ) : (
@@ -92,7 +92,7 @@ export function ChatPanel() {
                                     <div className="flex items-baseline gap-2 mb-1">
                                         <span className="font-semibold text-[13px] text-slate-900">{msg.author} <span
                                             className="text-[11px] font-normal text-slate-500 ml-1">(You)</span></span>
-                                        <span className="text-[11px] text-slate-500">{msg.timestamp}</span>
+                                        <span className="text-[11px] text-slate-500">{(Date.now() - msg.timestamp)}</span>
                                     </div>
                                     <div
                                         className="text-[13px] text-slate-700 bg-white border border-slate-200 rounded-lg rounded-tl-none p-3 shadow-sm">
