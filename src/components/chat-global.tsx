@@ -1,25 +1,32 @@
 ﻿import {useState, useRef, useEffect} from 'react';
 import { Icons } from '#/components/icon';
-import { INITIAL_MESSAGES } from './MOCK-DATA';
+import { useMessages } from '#/hooks/useMessages';
+import { useRealtimeMessages } from '#/hooks/useRealTimeMessages';
+import { supabase } from '#/integrations/tanstack-query/supabase-client.ts';
 
 // --------------------------------------------------------
 // 3. CHAT GLOBAL (Con soporte para comandos "/")
 // --------------------------------------------------------
-export function ChatPanel() {
-    const [messages, setMessages] = useState(INITIAL_MESSAGES);
+export function ChatPanel({ prId = 1 }: { prId?: number }) {
     const [inputValue, setInputValue] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Fetch messages from database
+    const { data: dbMessages = [] } = useMessages(prId);
+    
+    // Set up real-time subscription
+    const { messages, setMessages } = useRealtimeMessages(prId, (dbMessages as any) || []);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({behavior: "smooth"});
     }, [messages]);
 
-    const handleSend = () => {
+    const handleSend = async () => {
         if (!inputValue.trim()) return;
 
         const text = inputValue.trim();
         let newMsg: any = {
-            id: Date.now(),
+            pr_id: prId,
             author: "tech-lead",
             avatar: "TL",
             timestamp: "Just now",
@@ -45,8 +52,14 @@ export function ChatPanel() {
             newMsg.content = text;
         }
 
-        setMessages((prev) => [...prev, newMsg]);
-        setInputValue('');
+        try {
+            // Insert message into database
+            const { error } = await supabase.from('messages').insert(newMsg);
+            if (error) throw error;
+            setInputValue('');
+        } catch (error) {
+            console.error('Failed to save message:', error);
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -177,3 +190,4 @@ export function ChatPanel() {
         </div>
     );
 }
+

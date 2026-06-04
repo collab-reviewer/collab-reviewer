@@ -1,7 +1,10 @@
 ﻿import {useState} from 'react';
 import { Icons } from './icon';
 
-import { MOCK_DIFF_LINES, MOCK_PR_DATA, INITIAL_INLINE_COMMENTS } from './MOCK-DATA';
+import { MOCK_DIFF_LINES, MOCK_PR_DATA } from './MOCK-DATA';
+import { useInlineComments } from '#/hooks/useInLineComments';
+import { useRealtimeInlineComments } from '#/hooks/useRealtimeInlineComments';
+import { supabase } from '#/integrations/tanstack-query/supabase-client.ts';
 
 // --------------------------------------------------------
 // 2. Code View with inline comments
@@ -36,20 +39,32 @@ export function InlineCommentEditor({onCancel, onSave}: { onCancel: () => void, 
     );
 }
 
-export function CodeViewer({prData}: { prData: typeof MOCK_PR_DATA }) {
-    const [inlineComments, setInlineComments] = useState(INITIAL_INLINE_COMMENTS);
+export function CodeViewer({prData, prId = 1}: { prData: typeof MOCK_PR_DATA, prId?: number }) {
     const [activeEditorLineId, setActiveEditorLineId] = useState<string | null>(null);
 
-    const handleSaveInlineComment = (lineId: string, text: string) => {
-        setInlineComments([...inlineComments, {
-            id: Date.now(),
-            lineId,
-            author: "tech-lead",
-            avatar: "TL",
-            content: text,
-            timestamp: "Just now"
-        }]);
-        setActiveEditorLineId(null);
+    // Fetch inline comments from database
+    const { data: dbComments = [] } = useInlineComments(prId);
+    
+    // Set up real-time subscription
+    const { comments: inlineComments, setComments: setInlineComments } = useRealtimeInlineComments(prId, dbComments as any);
+
+    const handleSaveInlineComment = async (lineId: string, text: string) => {
+        try {
+            // Insert comment into database
+            const { error } = await supabase.from('inline_comments').insert({
+                pr_id: prId,
+                line_id: lineId,
+                author: "tech-lead",
+                avatar: "TL",
+                content: text,
+                timestamp: "Just now"
+            });
+
+            if (error) throw error;
+            setActiveEditorLineId(null);
+        } catch (error) {
+            console.error('Failed to save comment:', error);
+        }
     };
 
     return (
@@ -86,7 +101,7 @@ export function CodeViewer({prData}: { prData: typeof MOCK_PR_DATA }) {
                     if (isRemove) bgClass = 'bg-[#f85149]/10 hover:bg-[#f85149]/20';
                     if (isHeader) bgClass = 'text-[#8b949e] px-4 py-2 bg-[#0d1117]';
 
-                    const lineComments = inlineComments.filter(c => c.lineId === line.id);
+                    const lineComments = inlineComments.filter(c => c.line_id === line.id);
                     const isEditorOpen = activeEditorLineId === line.id;
 
                     if (isHeader) {
