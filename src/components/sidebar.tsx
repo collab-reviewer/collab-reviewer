@@ -34,39 +34,35 @@ export function Sidebar({ onSelectPR }: { onSelectPR?: (prId: number) => void })
                     Reviews
                 </div>
                 <div className="space-y-1">
-                    {isLoading ? (
-                        <div className="px-3 py-2 text-slate-500 text-sm">Loading PRs...</div>
-                    ) : pullRequests.length === 0 ? (
-                        <div className="px-3 py-2 text-slate-500 text-sm">No pull requests</div>
-                    ) : (
-                        pullRequests.map((pr: any) => {
-                            const isActive = activePRId === pr.id;
-                            return (
-                                <button 
-                                    key={pr.id}
-                                    onClick={() => handleSelectPR(pr.id)}
-                                    className={`w-full text-left px-3 py-2.5 rounded-lg transition-all group border ${isActive ? 'bg-white border-slate-200 shadow-sm' : 'border-transparent hover:bg-slate-100/50'}`}>
-                                    <div className="flex justify-between items-center mb-1.5">
-                                        <span className="text-[11px] font-medium text-slate-500">{pr.repo}</span>
-                                        {/* Unread count - set to 0 for now since we don't track this yet */}
-                                        {/* <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-4.5 text-center">2</span> */}
-                                    </div>
-                                    <div className="flex gap-2 items-start">
-                                        <span
-                                            className={`mt-0.5 ${isActive ? 'text-green-600' : 'text-slate-400'}`}><Icons.GitPullRequest/></span>
-                                        <span
-                                            className={`text-[13px] leading-snug font-medium line-clamp-2 ${isActive ? 'text-slate-900' : 'text-slate-600'}`}>{pr.title}</span>
-                                    </div>
-                                </button>
-                            );
-                        })
-                    )}
+                    {MOCK_CHANNELS.map((channel) => (
+                        <button key={channel.id}
+                                className={`w-full text-left px-3 py-2.5 rounded-lg transition-all group border 
+                                    ${channel.isActive ? 'bg-white border-slate-200 shadow-sm' : 'border-transparent hover:bg-slate-100/50'}`}>
+                            <div className="flex justify-between items-center mb-1.5">
+                                <span className="text-[11px] font-medium text-slate-500">{channel.repo}</span>
+                                {channel.unread > 0 && (
+                                    <span
+                                        className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-4.5 text-center">
+                                        {channel.unread}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex gap-2 items-start">
+                                <span
+                                    className={`mt-0.5 ${channel.isActive ? 'text-green-600' : 'text-slate-400'}`}><Icons.GitPullRequest/></span>
+                                <span
+                                    className={`text-[13px] leading-snug font-medium line-clamp-2 
+                                        ${channel.isActive ? 'text-slate-900' : 'text-slate-600'}`}>{channel.title}</span>
+                            </div>
+                        </button>
+                    ))}
                 </div>
             </div>
 
             <div className="h-14 px-4 border-t border-slate-200 flex items-center gap-3 bg-white">
                 <div
-                    className="w-7 h-7 rounded-full bg-indigo-100 border border-indigo-200 flex items-center justify-center text-[11px] font-bold text-indigo-700">TL
+                    className="w-7 h-7 rounded-full bg-indigo-100 border border-indigo-200 flex items-center 
+                        justify-center text-[11px] font-bold text-indigo-700">TL
                 </div>
                 <div className="flex flex-col">
                     <span className="text-[13px] font-medium text-slate-900 leading-tight">tech-lead (You)</span>

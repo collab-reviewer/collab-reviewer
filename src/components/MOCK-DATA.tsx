@@ -40,7 +40,7 @@ export const MOCK_DIFF_LINES = [
 export const INITIAL_MESSAGES = [
     {
         id: 1, author: "System", content: "dev-juan requested a review from you",
-        timestamp: "2 hours ago", type: "system-event", icon: "request", avatar: "SJ"
+        timestamp: new Date().setTime(1767229200), type: "system-event", icon: "request", avatar: "SJ"
     }
 ];
 
