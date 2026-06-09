@@ -11,7 +11,7 @@ export function Sidebar() {
     const handleLogout = async () => {
         await supabase.auth.signOut();
         await router.invalidate();
-        await router.navigate({to: '/login'})
+        await router.navigate({to: '/login'});
     }
 
 
@@ -48,7 +48,7 @@ export function Sidebar() {
                                 </span>
                                 {channel.unread > 0 && (
                                     <span
-                                        className="flex items-center justify-center h-5 min-w-[20px] px-1.5 text-[10px] font-bold text-white bg-indigo-600 rounded-full shadow-sm shrink-0">
+                                        className="flex items-center justify-center h-5 min-w-5 px-1.5 text-[10px] font-bold text-white bg-indigo-600 rounded-full shadow-sm shrink-0">
                                         {channel.unread}
                                     </span>
                                 )}
