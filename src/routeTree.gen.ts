@@ -10,11 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 import { Route as ApiTestRouteImport } from './routes/api/test'
+import { Route as ApiGithubRouteImport } from './routes/api/github'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginIndexRoute = LoginIndexRouteImport.update({
+  id: '/login/',
+  path: '/login/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTestRoute = ApiTestRouteImport.update({
@@ -22,31 +35,54 @@ const ApiTestRoute = ApiTestRouteImport.update({
   path: '/api/test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGithubRoute = ApiGithubRouteImport.update({
+  id: '/api/github',
+  path: '/api/github',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/github': typeof ApiGithubRoute
   '/api/test': typeof ApiTestRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/login/': typeof LoginIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/github': typeof ApiGithubRoute
   '/api/test': typeof ApiTestRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/login': typeof LoginIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/github': typeof ApiGithubRoute
   '/api/test': typeof ApiTestRoute
+  '/auth/callback': typeof AuthCallbackRoute
+  '/login/': typeof LoginIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/test'
+  fullPaths: '/' | '/api/github' | '/api/test' | '/auth/callback' | '/login/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/test'
-  id: '__root__' | '/' | '/api/test'
+  to: '/' | '/api/github' | '/api/test' | '/auth/callback' | '/login'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/github'
+    | '/api/test'
+    | '/auth/callback'
+    | '/login/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiGithubRoute: typeof ApiGithubRoute
   ApiTestRoute: typeof ApiTestRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
+  LoginIndexRoute: typeof LoginIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,6 +94,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login/': {
+      id: '/login/'
+      path: '/login'
+      fullPath: '/login/'
+      preLoaderRoute: typeof LoginIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/test': {
       id: '/api/test'
       path: '/api/test'
@@ -65,12 +115,22 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/github': {
+      id: '/api/github'
+      path: '/api/github'
+      fullPath: '/api/github'
+      preLoaderRoute: typeof ApiGithubRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiGithubRoute: ApiGithubRoute,
   ApiTestRoute: ApiTestRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
+  LoginIndexRoute: LoginIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

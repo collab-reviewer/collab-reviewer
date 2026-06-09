@@ -37,10 +37,52 @@ export const MOCK_DIFF_LINES = [
     },
 ];
 
-export const INITIAL_MESSAGES = [
+type MessageType = 'comment' | 'system-event';
+type MessageIcon = 'approve' | 'info';
+
+export interface Message {
+    id: number;
+    type: MessageType;
+    author: string;
+    avatar: string;
+    timestamp: string;
+    content: string;
+    icon?: MessageIcon;
+}
+
+export const INITIAL_MESSAGES: Message[] = [
     {
-        id: 1, author: "System", content: "dev-juan requested a review from you",
-        timestamp: "2 hours ago", type: "system-event", icon: "request", avatar: "SJ"
+        id: 1,
+        type: 'comment',
+        author: 'sarah-chen',
+        avatar: 'SC',
+        timestamp: '2 hours ago',
+        content: 'I have updated the authentication flow to use the new Supabase SSR package. The session is now properly persisted across server and client components. Could you take a look at the callback route implementation?',
+    },
+    {
+        id: 2,
+        type: 'comment',
+        author: 'alex-dev',
+        avatar: 'AD',
+        timestamp: '1 hour ago',
+        content: 'The implementation looks solid overall. However, we might want to handle the loading state a bit more gracefully in the root route to prevent the UI from flickering before the layout shifts. I left a few inline comments on the client initialization.',
+    },
+    {
+        id: 3,
+        type: 'comment',
+        author: 'sarah-chen',
+        avatar: 'SC',
+        timestamp: '45 minutes ago',
+        content: 'Good catch! I just pushed a new commit that introduces a skeleton loader during the initial auth check and moves the client instance out of the render cycle. Let me know if that resolves the flickering on your end.',
+    },
+    {
+        id: 4,
+        type: 'system-event',
+        author: 'alex-dev',
+        avatar: 'AD',
+        timestamp: '10 minutes ago',
+        content: 'alex-dev approved these changes',
+        icon: 'approve',
     }
 ];
 

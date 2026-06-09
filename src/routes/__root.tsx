@@ -12,8 +12,6 @@ import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
 
-import { Octokit, App } from 'octokit'
-
 interface MyRouterContext {
   queryClient: QueryClient
 }
