@@ -25,7 +25,6 @@ function RouteComponent() {
                 setIsLoading(false)
             }
         )
-
         return () => subscription.unsubscribe()
     }, [])
 

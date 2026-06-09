@@ -1,7 +1,20 @@
 ﻿import {MOCK_CHANNELS} from "./MOCK-DATA";
-import {GitPullRequest} from "lucide-react";
+import {GitPullRequest, LogOut} from "lucide-react";
+import {createClient} from "#/supabase/client.ts";
+import {useRouter} from "@tanstack/react-router";
 
 export function Sidebar() {
+
+    const supabase = createClient();
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        await router.invalidate();
+        await router.navigate({to: '/login'})
+    }
+
+
     return (
         <div className="flex flex-col h-full shrink-0 w-70 bg-slate-50/50 border-r border-slate-200 z-10">
             <div
@@ -59,20 +72,29 @@ export function Sidebar() {
                 </div>
             </div>
 
-            <div className="flex items-center gap-3 px-5 h-16 bg-white border-t border-slate-200 shrink-0">
-                <div
-                    className="flex items-center justify-center shrink-0 w-9 h-9 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full shadow-sm">
-                    TL
+            <div className="flex items-center justify-between px-5 h-16 bg-white border-t border-slate-200 shrink-0">
+                <div className="flex items-center gap-3 min-w-0">
+                    <div
+                        className="flex items-center justify-center shrink-0 w-9 h-9 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full shadow-sm">
+                        TL
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-semibold truncate text-slate-900">
+                            tech-lead <span className="text-slate-400 font-medium ml-0.5">(You)</span>
+                        </span>
+                        <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-500 mt-0.5">
+                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                            Online
+                        </span>
+                    </div>
                 </div>
-                <div className="flex flex-col min-w-0">
-                    <span className="text-sm font-semibold truncate text-slate-900">
-                        tech-lead <span className="text-slate-400 font-medium ml-0.5">(You)</span>
-                    </span>
-                    <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-500 mt-0.5">
-                        <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                        Online
-                    </span>
-                </div>
+                <button
+                    onClick={() => handleLogout()}
+                    className="flex items-center justify-center p-2 text-slate-400 transition-colors rounded-lg hover:text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+                    title="Sign Out"
+                >
+                    <LogOut className="w-4 h-4"/>
+                </button>
             </div>
         </div>
     );
