@@ -1,6 +1,7 @@
 ﻿import { Icons } from "./icon";
 import { useState } from "react";
 import { usePullRequests } from "#/hooks/usePullRequests";
+import { MOCK_CHANNELS } from "./MOCK-DATA";
 
 // --------------------------------------------------------
 // 1. SIDEBAR (Lista de PRs activas)

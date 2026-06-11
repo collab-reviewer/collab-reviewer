@@ -51,20 +51,31 @@ export function CodeViewer({prData, prId = 1}: { prData: typeof MOCK_PR_DATA, pr
 
     const handleSaveInlineComment = async (lineId: string, text: string) => {
         try {
-            // Insert comment into database
-            const { error } = await supabase.from('inline_comments').insert({
-                pr_id: prId,
-                line_id: lineId,
-                author: "tech-lead",
-                avatar: "TL",
-                content: text,
-                timestamp: "Just now"
-            });
+            // Insert comment into database and return the inserted row
+            const { data, error } = await supabase
+                .from('inline_comments')
+                .insert({
+                    pr_id: prId,
+                    line_id: lineId,
+                    author: "tech-lead",
+                    avatar: "TL",
+                    content: text,
+                    timestamp: "Just now"
+                })
+                .select()
+                .single()
 
-            if (error) throw error;
-            setActiveEditorLineId(null);
+            if (error) throw error
+            if (data) {
+                setInlineComments((prev) =>
+                    prev.some((comment) => comment.id === data.id)
+                        ? prev
+                        : [...prev, data]
+                )
+            }
+            setActiveEditorLineId(null)
         } catch (error) {
-            console.error('Failed to save comment:', error);
+            console.error('Failed to save comment:', error)
         }
     };
 

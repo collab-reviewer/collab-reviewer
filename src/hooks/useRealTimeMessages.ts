@@ -17,6 +17,10 @@ export function useRealtimeMessages(prId: number, initialMessages: Message[]) {
   const [messages, setMessages] = useState<Message[]>(initialMessages)
 
   useEffect(() => {
+    setMessages(initialMessages)
+  }, [initialMessages])
+
+  useEffect(() => {
     // Subscribe to new messages on this PR
     const channel = supabase
       .channel(`messages:pr_${prId}`)
@@ -30,7 +34,11 @@ export function useRealtimeMessages(prId: number, initialMessages: Message[]) {
         },
         (payload) => {
           const newMessage = payload.new as Message
-          setMessages((prev) => [...prev, newMessage])
+          setMessages((prev) =>
+            prev.some((msg) => msg.id === newMessage.id)
+              ? prev
+              : [...prev, newMessage]
+          )
         }
       )
       .subscribe()

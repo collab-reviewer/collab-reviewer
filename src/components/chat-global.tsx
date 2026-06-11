@@ -53,12 +53,24 @@ export function ChatPanel({ prId = 1 }: { prId?: number }) {
         }
 
         try {
-            // Insert message into database
-            const { error } = await supabase.from('messages').insert(newMsg);
-            if (error) throw error;
-            setInputValue('');
+            // Insert message into database and return the inserted row
+            const { data, error } = await supabase
+                .from('messages')
+                .insert(newMsg)
+                .select()
+                .single()
+
+            if (error) throw error
+            if (data) {
+                setMessages((prev) =>
+                    prev.some((msg) => msg.id === data.id)
+                        ? prev
+                        : [...prev, data]
+                )
+            }
+            setInputValue('')
         } catch (error) {
-            console.error('Failed to save message:', error);
+            console.error('Failed to save message:', error)
         }
     };
 

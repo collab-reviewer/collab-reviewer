@@ -13,32 +13,40 @@ created_at: string
 }
 
 export function useRealtimeInlineComments(prId: number, initialComments: InlineComment[]) {
-const [comments, setComments] = useState<InlineComment[]>(initialComments)
+  const [comments, setComments] = useState<InlineComment[]>(initialComments)
 
-useEffect(() => {
+  useEffect(() => {
+    setComments(initialComments)
+  }, [initialComments])
+
+  useEffect(() => {
     // Subscribe to new comments on this PR
     const channel = supabase
-    .channel(`inline_comments:pr_${prId}`)
-    .on(
+      .channel(`inline_comments:pr_${prId}`)
+      .on(
         'postgres_changes',
         {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'inline_comments',
-        filter: `pr_id=eq.${prId}`,
+          event: 'INSERT',
+          schema: 'public',
+          table: 'inline_comments',
+          filter: `pr_id=eq.${prId}`,
         },
         (payload) => {
-        const newComment = payload.new as InlineComment
-        setComments((prev) => [...prev, newComment])
+          const newComment = payload.new as InlineComment
+          setComments((prev) =>
+            prev.some((comment) => comment.id === newComment.id)
+              ? prev
+              : [...prev, newComment]
+          )
         }
-    )
-    .subscribe()
+      )
+      .subscribe()
 
     // Cleanup: unsubscribe when component unmounts
     return () => {
-    channel.unsubscribe()
+      channel.unsubscribe()
     }
-}, [prId])
+  }, [prId])
 
-return { comments, setComments }
+  return { comments, setComments }
 }
