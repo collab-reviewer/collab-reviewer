@@ -1,19 +1,24 @@
-﻿import {MOCK_CHANNELS} from "./MOCK-DATA";
-import {GitPullRequest, LogOut} from "lucide-react";
+﻿import {GitPullRequest, LogOut} from "lucide-react";
 import {createClient} from "#/supabase/client.ts";
-import {useRouter} from "@tanstack/react-router";
+import {useNavigate, useRouter} from "@tanstack/react-router";
+import {usePullRequestQuery} from "#/queries/usePullRequest.ts";
+import {usePullRequestSubscription} from "#/hooks/pullRequestSubscriptions.ts";
+import type {PullRequest} from "#/types/pull_request.ts";
 
 export function Sidebar() {
-
     const supabase = createClient();
     const router = useRouter();
+    const navigate = useNavigate({from: '/'});
+
+    const {data: channels = [], isLoading} = usePullRequestQuery();
+
+    usePullRequestSubscription();
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
         await router.invalidate();
         await router.navigate({to: '/login'});
     }
-
 
     return (
         <div className="flex flex-col h-full shrink-0 w-70 bg-slate-50/50 border-r border-slate-200 z-10">
@@ -32,44 +37,48 @@ export function Sidebar() {
                 <div className="px-2 mb-3 text-xs font-bold tracking-wider uppercase text-slate-400">
                     Active Reviews
                 </div>
-                <div className="space-y-1.5">
-                    {MOCK_CHANNELS.map((channel) => (
-                        <button
-                            key={channel.id}
-                            className={`flex flex-col w-full px-3 py-3 text-left transition-all border rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-50 ${
-                                channel.isActive
-                                    ? 'bg-white border-slate-200 shadow-sm'
-                                    : 'border-transparent hover:bg-slate-100/80 hover:border-slate-200/50'
-                            }`}
-                        >
-                            <div className="flex items-center justify-between w-full mb-1.5">
-                                <span className="text-xs font-semibold text-slate-500 truncate pr-2">
-                                    {channel.repo}
-                                </span>
-                                {channel.unread > 0 && (
-                                    <span
-                                        className="flex items-center justify-center h-5 min-w-5 px-1.5 text-[10px] font-bold text-white bg-indigo-600 rounded-full shadow-sm shrink-0">
-                                        {channel.unread}
+
+                {isLoading ? (
+                    <div className="px-3 text-sm text-slate-400 flex items-center gap-2">
+                        <span
+                            className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></span>
+                        Loading...
+                    </div>
+                ) : (
+                    <div className="space-y-1.5">
+                        {channels.map((channel: PullRequest) => (
+                            <button
+                                key={channel.id}
+                                onClick={() => navigate({search: {prId: channel.id.toString(), url: channel.diffUrl}})}
+                                className={`flex flex-col w-full px-3 py-3 text-left transition-all border rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 focus-visible:ring-offset-slate-50 ${
+                                    channel.status === 'open'
+                                        ? 'bg-white border-slate-200 shadow-sm'
+                                        : 'border-transparent hover:bg-slate-100/80 hover:border-slate-200/50'
+                                }`}
+                            >
+                                <div className="flex items-center justify-between w-full mb-1.5">
+                                    <span className="text-xs font-semibold text-slate-500 truncate pr-2">
+                                        {channel.repo}
                                     </span>
-                                )}
-                            </div>
-                            <div className="flex items-start gap-2.5">
-                                <GitPullRequest
-                                    className={`w-4 h-4 mt-0.5 shrink-0 transition-colors ${
-                                        channel.isActive ? 'text-emerald-500' : 'text-slate-400 group-hover:text-slate-500'
-                                    }`}
-                                />
-                                <span
-                                    className={`text-sm leading-snug font-medium line-clamp-2 transition-colors ${
-                                        channel.isActive ? 'text-slate-900' : 'text-slate-600 group-hover:text-slate-900'
-                                    }`}
-                                >
-                                    {channel.title}
-                                </span>
-                            </div>
-                        </button>
-                    ))}
-                </div>
+                                </div>
+                                <div className="flex items-start gap-2.5">
+                                    <GitPullRequest
+                                        className={`w-4 h-4 mt-0.5 shrink-0 transition-colors ${
+                                            channel.status === 'open' ? 'text-emerald-500' : 'text-slate-400 group-hover:text-slate-500'
+                                        }`}
+                                    />
+                                    <span
+                                        className={`text-sm leading-snug font-medium line-clamp-2 transition-colors ${
+                                            channel.status === 'open' ? 'text-slate-900' : 'text-slate-600 group-hover:text-slate-900'
+                                        }`}
+                                    >
+                                        {channel.title}
+                                    </span>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
             <div className="flex items-center justify-between px-5 h-16 bg-white border-t border-slate-200 shrink-0">

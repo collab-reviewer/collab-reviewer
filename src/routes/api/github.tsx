@@ -1,29 +1,25 @@
 import {createFileRoute} from '@tanstack/react-router'
+import {savePullRequest} from "#/actions/pullrequest.ts";
+import type {GitHubWebhookPayload} from "#/actions/actions.types.ts";
 
 export const Route = createFileRoute('/api/github')({
     server: {
         handlers: {
             POST: async ({request}) => {
                 try {
-                    const payload = await request.json()
-                    if (payload.action === 'opened' && payload.pull_request) {
-                        console.log('¡Nuevo Pull Request creado!')
-                        console.log('Título:', payload.pull_request.title)
-                        console.log('Usuario:', payload.pull_request.user.login)
-
-                        // Aquí puedes hacer lo que necesites:
-                        // - Guardar un registro en Supabase
-                        // - Enviar un mensaje a Discord/Slack
-                        // - Mandar un correo
+                    const data: GitHubWebhookPayload = await request.json()
+                    if (data.action === 'opened' && data.pull_request) {
+                        console.log(`Received webhook for PR #${data.pull_request.number} in repo ${data.repository.full_name}`)
+                        await savePullRequest({data})
                     }
 
-                    return new Response(JSON.stringify({message: 'Webhook recibido con éxito'}), {
+                    return new Response(JSON.stringify({message: 'Webhook processed successfully'}), {
                         status: 200,
                         headers: {'Content-Type': 'application/json'},
                     })
                 } catch (error) {
-                    console.error('Error procesando el webhook:', error)
-                    return new Response('Error interno del servidor', {status: 500})
+                    console.error('Error processing webhook:', error)
+                    return new Response('Internal server error', {status: 500})
                 }
             },
         }
