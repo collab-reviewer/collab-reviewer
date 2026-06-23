@@ -1,8 +1,9 @@
 ﻿import {useState} from 'react';
-import {INITIAL_INLINE_COMMENTS} from './MOCK-DATA';
 import {GitMerge, GitPullRequest, Loader2, Plus} from "lucide-react";
-import {useQuery} from "@tanstack/react-query";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {getPullRequestDiff} from "#/actions/pullrequest.ts";
+import {getCommentsByPullRequestId, insertComment} from "#/actions/inlineComments.ts";
+import {getUserSession} from "#/actions/session.ts";
 
 interface InlineCommentEditorProps {
     onCancel: () => void;
@@ -29,6 +30,14 @@ interface DiffLine {
 interface CodeViewerProps {
     prId?: string;
     url?: string;
+}
+
+interface CreateCommentPayload {
+    prId: number;
+    lineId: string;
+    author: string;
+    avatar: string;
+    content: string;
 }
 
 export function InlineCommentEditor({onCancel, onSave}: InlineCommentEditorProps) {
@@ -64,14 +73,32 @@ export function InlineCommentEditor({onCancel, onSave}: InlineCommentEditorProps
 }
 
 export function CodeViewer({prId, url}: CodeViewerProps) {
-    const [inlineComments, setInlineComments] = useState<InlineComment[]>(INITIAL_INLINE_COMMENTS);
+    const queryClient = useQueryClient();
     const [activeEditorLineId, setActiveEditorLineId] = useState<string | null>(null);
 
-    // Fetch the diff using React Query and the Server Function
+    const {data: user} = useQuery({
+        queryKey: ['userSession'],
+        queryFn: () => getUserSession(),
+    });
+
     const {data: diffLines = [], isLoading, error} = useQuery({
         queryKey: ['diff', url],
         queryFn: () => getPullRequestDiff({data: url!}),
         enabled: !!url,
+    });
+
+    const {data: inlineComments = []} = useQuery({
+        queryKey: ['inlineComments', prId],
+        queryFn: () => getCommentsByPullRequestId({data: {prId: parseInt(prId!, 10)}}),
+        enabled: !!prId,
+    });
+
+    const addCommentMutation = useMutation({
+        mutationFn: async (newComment: CreateCommentPayload) => insertComment({data: newComment}),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({queryKey: ['inlineComments', prId]});
+            setActiveEditorLineId(null);
+        }
     });
 
     if (!prId) {
@@ -90,18 +117,16 @@ export function CodeViewer({prId, url}: CodeViewerProps) {
     }
 
     const handleSaveInlineComment = (lineId: string, text: string) => {
-        setInlineComments((prev) => [
-            ...prev,
-            {
-                id: Date.now(),
-                lineId,
-                author: 'tech-lead',
-                avatar: 'TL',
-                content: text,
-                timestamp: 'Just now',
-            },
-        ]);
-        setActiveEditorLineId(null);
+        const authorName = user?.user_metadata?.full_name || user?.email || 'Anonymous';
+        const authorAvatar = authorName.substring(0, 2).toUpperCase();
+
+        addCommentMutation.mutate({
+            prId: parseInt(prId, 10),
+            lineId,
+            author: authorName,
+            avatar: authorAvatar,
+            content: text,
+        });
     };
 
     return (
@@ -153,7 +178,7 @@ export function CodeViewer({prId, url}: CodeViewerProps) {
                         if (isRemove) bgClass = 'bg-[#f85149]/10 hover:bg-[#f85149]/20 transition-colors';
                         if (isHeader) bgClass = 'text-slate-400 px-4 py-3 bg-[#0d1117]/50 text-xs font-semibold';
 
-                        const lineComments = inlineComments.filter((c) => c.lineId === line.id);
+                        const lineComments = inlineComments.filter((c: InlineComment) => c.lineId === line.id);
                         const isEditorOpen = activeEditorLineId === line.id;
 
                         if (isHeader) {
@@ -195,8 +220,8 @@ export function CodeViewer({prId, url}: CodeViewerProps) {
 
                                 {lineComments.length > 0 && (
                                     <div
-                                        className="ml-[72px] mr-4 my-3 font-sans bg-[#161b22] border border-[#30363d] rounded-xl shadow-md overflow-hidden">
-                                        {lineComments.map((comment, index) => (
+                                        className="ml-18 mr-4 my-3 font-sans bg-[#161b22] border border-[#30363d] rounded-xl shadow-md overflow-hidden">
+                                        {lineComments.map((comment: InlineComment, index: number) => (
                                             <div
                                                 key={comment.id}
                                                 className={`p-4 ${index !== 0 ? 'border-t border-[#30363d]' : ''}`}
@@ -204,7 +229,7 @@ export function CodeViewer({prId, url}: CodeViewerProps) {
                                                 <div className="flex gap-3">
                                                     <div
                                                         className={`flex items-center justify-center shrink-0 w-8 h-8 text-xs font-bold rounded-full ${
-                                                            comment.author === 'tech-lead'
+                                                            comment.author === user?.email || comment.author === user?.user_metadata?.full_name
                                                                 ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
                                                                 : 'bg-slate-800 text-slate-300 border border-slate-700'
                                                         }`}

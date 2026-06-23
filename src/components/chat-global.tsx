@@ -1,55 +1,99 @@
-﻿import {useState, useRef, useEffect} from 'react';
-import {INITIAL_MESSAGES, type Message} from './MOCK-DATA';
-import {CheckCircle, Info, MessageSquare, Zap} from "lucide-react";
+﻿import {useEffect, useRef, useState} from 'react';
+import {CheckCircle, Info, Loader2, MessageSquare, Zap} from "lucide-react";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {getMessagesByPullRequestId, insertMessage} from "#/actions/messages.ts";
+import {getUserSession} from "#/actions/session.ts";
 
+interface ChatPanelProps {
+    prId?: string;
+}
 
-export function ChatPanel() {
-    const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+interface Message {
+    id: number;
+    prId: number;
+    author: string;
+    avatar: string;
+    content: string;
+    type: string;
+    timestamp: string;
+    createdAt: string;
+}
+
+interface CreateMessagePayload {
+    prId: number;
+    author: string;
+    avatar: string;
+    content: string;
+    type: string;
+}
+
+export function ChatPanel({prId}: ChatPanelProps) {
+    const queryClient = useQueryClient();
     const [inputValue, setInputValue] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const {data: user} = useQuery({
+        queryKey: ['userSession'],
+        queryFn: () => getUserSession(),
+    });
+
+    const {data: messages = [], isLoading} = useQuery({
+        queryKey: ['messages', prId],
+        queryFn: () => getMessagesByPullRequestId({data: {prId: parseInt(prId!, 10)}}),
+        enabled: !!prId,
+    });
+
+    const addMessageMutation = useMutation({
+        mutationFn: async (newMsg: CreateMessagePayload) => insertMessage({data: newMsg}),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({queryKey: ['messages', prId]});
+        }
+    });
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
     }, [messages]);
 
+    if (!prId) {
+        return (
+            <div
+                className="flex flex-col items-center justify-center h-full w-105 min-w-95 shrink-0 bg-slate-50/50 border-l border-slate-200 z-20">
+                <MessageSquare className="w-8 h-8 text-slate-400 mb-4"/>
+                <p className="text-sm font-medium text-slate-500">Select a PR to view discussion</p>
+            </div>
+        );
+    }
+
     const handleSend = () => {
         if (!inputValue.trim()) return;
 
         const text = inputValue.trim();
-        const baseMessage = {
-            id: Date.now(),
-            author: 'tech-lead',
-            avatar: 'TL',
-            timestamp: 'Just now',
-        };
+        const authorName = user?.user_metadata?.full_name || user?.email || 'Anonymous';
+        const authorAvatar = authorName.substring(0, 2).toUpperCase();
 
-        let newMsg: Message;
+        let type = 'comment';
+        let content = text;
 
         if (text.startsWith('/')) {
             const command = text.split(' ')[0].toLowerCase();
 
             if (command === '/lgtm' || command === '/approve') {
-                newMsg = {
-                    ...baseMessage,
-                    type: 'system-event',
-                    icon: 'approve',
-                    content: 'tech-lead approved these changes',
-                };
+                type = 'approve';
+                content = `${authorName} approved these changes`;
             } else if (command === '/close') {
-                newMsg = {
-                    ...baseMessage,
-                    type: 'system-event',
-                    icon: 'info',
-                    content: 'tech-lead closed this pull request',
-                };
-            } else {
-                newMsg = {...baseMessage, type: 'comment', content: text};
+                type = 'close';
+                content = `${authorName} closed this pull request`;
             }
-        } else {
-            newMsg = {...baseMessage, type: 'comment', content: text};
         }
 
-        setMessages((prev) => [...prev, newMsg]);
+        addMessageMutation.mutate({
+            prId: parseInt(prId, 10),
+            author: authorName,
+            avatar: authorAvatar,
+            content,
+            type,
+        });
+
         setInputValue('');
     };
 
@@ -66,10 +110,10 @@ export function ChatPanel() {
     };
 
     const isCommandMode = inputValue.startsWith('/');
+    const currentUserDisplayName = user?.user_metadata?.full_name || user?.email;
 
     return (
-        <div
-            className="flex flex-col h-full w-105 min-w-95 shrink-0 bg-slate-50/50 border-l border-slate-200 z-20">
+        <div className="flex flex-col h-full w-105 min-w-95 shrink-0 bg-slate-50/50 border-l border-slate-200 z-20">
             <div
                 className="flex items-center justify-between h-14 px-5 bg-white border-b border-slate-200 shrink-0 shadow-sm/50">
                 <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
@@ -79,48 +123,62 @@ export function ChatPanel() {
             </div>
 
             <div className="flex-1 p-5 overflow-y-auto scroll-smooth">
-                {messages.map((msg) => (
-                    <div key={msg.id} className="mb-6 last:mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                        {msg.type === 'system-event' ? (
-                            <div
-                                className="flex items-start gap-3 px-4 py-3 bg-white border border-slate-200 shadow-sm rounded-xl">
-                                <div className="mt-0.5">
-                                    {msg.icon === 'approve' ? (
-                                        <CheckCircle className="w-5 h-5 text-emerald-500"/>
-                                    ) : (
-                                        <Info className="w-5 h-5 text-blue-500"/>
-                                    )}
-                                </div>
-                                <div className="flex flex-col">
-                                    <p className="text-sm font-medium text-slate-800">{msg.content}</p>
-                                    <span className="text-xs font-medium text-slate-400 mt-0.5">{msg.timestamp}</span>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex gap-3">
-                                <div
-                                    className="flex items-center justify-center shrink-0 w-8 h-8 mt-0.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full shadow-sm">
-                                    {msg.avatar}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-baseline gap-2 mb-1.5">
-                                        <span className="text-sm font-semibold text-slate-900">
-                                            {msg.author}
-                                            {msg.author === 'tech-lead' && (
-                                                <span className="ml-1.5 text-xs font-medium text-slate-400">(You)</span>
-                                            )}
-                                        </span>
-                                        <span className="text-xs font-medium text-slate-400">{msg.timestamp}</span>
-                                    </div>
-                                    <div
-                                        className="p-3.5 text-sm text-slate-700 bg-white border border-slate-200 shadow-sm rounded-2xl rounded-tl-sm">
-                                        <p className="leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                {isLoading ? (
+                    <div className="flex flex-col items-center justify-center h-full">
+                        <Loader2 className="w-6 h-6 animate-spin text-slate-400 mb-2"/>
                     </div>
-                ))}
+                ) : (
+                    messages.map((msg: Message) => (
+                        <div key={msg.id}
+                             className="mb-6 last:mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            {msg.type !== 'comment' ? (
+                                <div
+                                    className="flex items-start gap-3 px-4 py-3 bg-white border border-slate-200 shadow-sm rounded-xl">
+                                    <div className="mt-0.5">
+                                        {msg.type === 'approve' ? (
+                                            <CheckCircle className="w-5 h-5 text-emerald-500"/>
+                                        ) : (
+                                            <Info className="w-5 h-5 text-blue-500"/>
+                                        )}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <p className="text-sm font-medium text-slate-800">{msg.content}</p>
+                                        <span
+                                            className="text-xs font-medium text-slate-400 mt-0.5">{formatDate(msg.timestamp)}</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex gap-3">
+                                    <div
+                                        className={`flex items-center justify-center shrink-0 w-8 h-8 mt-0.5 text-xs font-bold rounded-full shadow-sm ${
+                                            msg.author === currentUserDisplayName
+                                                ? 'text-indigo-700 bg-indigo-50 border border-indigo-100'
+                                                : 'text-slate-700 bg-slate-100 border border-slate-200'
+                                        }`}>
+                                        {msg.avatar}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-baseline gap-2 mb-1.5">
+                                            <span className="text-sm font-semibold text-slate-900">
+                                                {msg.author}
+                                                {msg.author === currentUserDisplayName && (
+                                                    <span
+                                                        className="ml-1.5 text-xs font-medium text-slate-400">(You)</span>
+                                                )}
+                                            </span>
+                                            <span
+                                                className="text-xs font-medium text-slate-400">{formatDate(msg.timestamp)}</span>
+                                        </div>
+                                        <div
+                                            className="p-3.5 text-sm text-slate-700 bg-white border border-slate-200 shadow-sm rounded-2xl rounded-tl-sm">
+                                            <p className="leading-relaxed whitespace-pre-wrap wrap-break-word">{msg.content}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))
+                )}
                 <div ref={messagesEndRef}/>
             </div>
 
@@ -193,3 +251,18 @@ export function ChatPanel() {
         </div>
     );
 }
+
+const formatDate = (isoString: string) => {
+    try {
+        const date = new Date(isoString);
+        return new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        }).format(date);
+    } catch {
+        return isoString;
+    }
+};

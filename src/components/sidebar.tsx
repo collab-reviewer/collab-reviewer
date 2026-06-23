@@ -3,7 +3,9 @@ import {createClient} from "#/supabase/client.ts";
 import {useNavigate, useRouter} from "@tanstack/react-router";
 import {usePullRequestQuery} from "#/queries/usePullRequest.ts";
 import {usePullRequestSubscription} from "#/hooks/pullRequestSubscriptions.ts";
+import {useQuery} from "@tanstack/react-query";
 import type {PullRequest} from "#/types/pull_request.ts";
+import {getUserSession} from "#/actions/session.ts";
 
 export function Sidebar() {
     const supabase = createClient();
@@ -14,11 +16,19 @@ export function Sidebar() {
 
     usePullRequestSubscription();
 
+    const {data: user} = useQuery({
+        queryKey: ['userSession'],
+        queryFn: () => getUserSession(),
+    });
+
     const handleLogout = async () => {
         await supabase.auth.signOut();
         await router.invalidate();
         await router.navigate({to: '/login'});
     }
+
+    const displayName = user?.user_metadata?.full_name || user?.email || 'User';
+    const avatarInitials = displayName.substring(0, 2).toUpperCase();
 
     return (
         <div className="flex flex-col h-full shrink-0 w-70 bg-slate-50/50 border-r border-slate-200 z-10">
@@ -85,11 +95,11 @@ export function Sidebar() {
                 <div className="flex items-center gap-3 min-w-0">
                     <div
                         className="flex items-center justify-center shrink-0 w-9 h-9 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full shadow-sm">
-                        TL
+                        {avatarInitials}
                     </div>
                     <div className="flex flex-col min-w-0">
                         <span className="text-sm font-semibold truncate text-slate-900">
-                            tech-lead <span className="text-slate-400 font-medium ml-0.5">(You)</span>
+                            {displayName} <span className="text-slate-400 font-medium ml-0.5">(You)</span>
                         </span>
                         <span className="flex items-center gap-1.5 text-xs font-medium text-emerald-500 mt-0.5">
                             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>

@@ -41,7 +41,7 @@ function IndexComponent() {
         <div className="flex h-screen w-full font-sans antialiased text-slate-900 bg-white overflow-hidden">
             <Sidebar/>
             <CodeViewer prId={prId} url={url}/>
-            <ChatPanel/>
+            <ChatPanel prId={prId}/>
         </div>
     );
 }
