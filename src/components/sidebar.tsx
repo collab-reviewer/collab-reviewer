@@ -1,4 +1,13 @@
+<<<<<<< ConnectToDatabase
+﻿import { Icons } from "./icon";
+import { useState } from "react";
+import { usePullRequests } from "#/hooks/usePullRequests";
+import { MOCK_CHANNELS } from "./MOCK-DATA";
+﻿import {MOCK_CHANNELS} from "./MOCK-DATA";
+import {GitPullRequest, LogOut} from "lucide-react";
+=======
 ﻿import {GitPullRequest, LogOut} from "lucide-react";
+>>>>>>> main
 import {createClient} from "#/supabase/client.ts";
 import {useNavigate, useRouter} from "@tanstack/react-router";
 import {usePullRequestQuery} from "#/queries/usePullRequest.ts";
@@ -29,6 +38,17 @@ export function Sidebar() {
 
     const displayName = user?.user_metadata?.full_name || user?.email || 'User';
     const avatarInitials = displayName.substring(0, 2).toUpperCase();
+
+export function Sidebar({ onSelectPR }: { onSelectPR?: (prId: number) => void }) {
+    const [activePRId, setActivePRId] = useState<number | null>(null);
+    
+    // Fetch pull requests from database
+    const { data: pullRequests = [], isLoading } = usePullRequests();
+
+    const handleSelectPR = (prId: number) => {
+        setActivePRId(prId);
+        onSelectPR?.(prId);
+    };
 
     return (
         <div className="flex flex-col h-full shrink-0 w-70 bg-slate-50/50 border-r border-slate-200 z-10">

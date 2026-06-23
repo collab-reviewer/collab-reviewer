@@ -32,6 +32,13 @@ export function ChatPanel({prId}: ChatPanelProps) {
     const [inputValue, setInputValue] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+<<<<<<< ConnectToDatabase
+    // Fetch messages from database
+    const { data: dbMessages = [] } = useMessages(prId);
+    
+    // Set up real-time subscription
+    const { messages, setMessages } = useRealtimeMessages(prId, (dbMessages as any) || []);
+=======
     const {data: user} = useQuery({
         queryKey: ['userSession'],
         queryFn: () => getUserSession(),
@@ -49,11 +56,15 @@ export function ChatPanel({prId}: ChatPanelProps) {
             await queryClient.invalidateQueries({queryKey: ['messages', prId]});
         }
     });
+>>>>>>> main
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
     }, [messages]);
 
+<<<<<<< ConnectToDatabase
+    const handleSend = async () => {
+=======
     if (!prId) {
         return (
             <div
@@ -65,6 +76,7 @@ export function ChatPanel({prId}: ChatPanelProps) {
     }
 
     const handleSend = () => {
+>>>>>>> main
         if (!inputValue.trim()) return;
 
         const text = inputValue.trim();
@@ -86,6 +98,28 @@ export function ChatPanel({prId}: ChatPanelProps) {
             }
         }
 
+<<<<<<< ConnectToDatabase
+        try {
+            // Insert message into database and return the inserted row
+            const { data, error } = await supabase
+                .from('messages')
+                .insert(newMsg)
+                .select()
+                .single()
+
+            if (error) throw error
+            if (data) {
+                setMessages((prev) =>
+                    prev.some((msg) => msg.id === data.id)
+                        ? prev
+                        : [...prev, data]
+                )
+            }
+            setInputValue('')
+        } catch (error) {
+            console.error('Failed to save message:', error)
+        }
+=======
         addMessageMutation.mutate({
             prId: parseInt(prId, 10),
             author: authorName,
@@ -95,6 +129,7 @@ export function ChatPanel({prId}: ChatPanelProps) {
         });
 
         setInputValue('');
+>>>>>>> main
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -133,6 +168,16 @@ export function ChatPanel({prId}: ChatPanelProps) {
                              className="mb-6 last:mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
                             {msg.type !== 'comment' ? (
                                 <div
+<<<<<<< ConnectToDatabase
+                                    className="flex items-center justify-center shrink-0 w-8 h-8 mt-0.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-full shadow-sm">
+                                    {msg.avatar}
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-baseline gap-2 mb-1">
+                                        <span className="font-semibold text-[13px] text-slate-900">{msg.author} <span
+                                            className="text-[11px] font-normal text-slate-500 ml-1">(You)</span></span>
+                                        <span className="text-[11px] text-slate-500">{(Date.now() - msg.timestamp)}</span>
+=======
                                     className="flex items-start gap-3 px-4 py-3 bg-white border border-slate-200 shadow-sm rounded-xl">
                                     <div className="mt-0.5">
                                         {msg.type === 'approve' ? (
@@ -145,6 +190,7 @@ export function ChatPanel({prId}: ChatPanelProps) {
                                         <p className="text-sm font-medium text-slate-800">{msg.content}</p>
                                         <span
                                             className="text-xs font-medium text-slate-400 mt-0.5">{formatDate(msg.timestamp)}</span>
+>>>>>>> main
                                     </div>
                                 </div>
                             ) : (
@@ -251,6 +297,8 @@ export function ChatPanel({prId}: ChatPanelProps) {
         </div>
     );
 }
+<<<<<<< ConnectToDatabase
+=======
 
 const formatDate = (isoString: string) => {
     try {
@@ -266,3 +314,4 @@ const formatDate = (isoString: string) => {
         return isoString;
     }
 };
+>>>>>>> main

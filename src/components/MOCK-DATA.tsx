@@ -76,13 +76,8 @@ export const INITIAL_MESSAGES: Message[] = [
         content: 'Good catch! I just pushed a new commit that introduces a skeleton loader during the initial auth check and moves the client instance out of the render cycle. Let me know if that resolves the flickering on your end.',
     },
     {
-        id: 4,
-        type: 'system-event',
-        author: 'alex-dev',
-        avatar: 'AD',
-        timestamp: '10 minutes ago',
-        content: 'alex-dev approved these changes',
-        icon: 'approve',
+        id: 1, author: "System", content: "dev-juan requested a review from you",
+        timestamp: new Date().setTime(1767229200), type: "system-event", icon: "request", avatar: "SJ"
     }
 ];
 

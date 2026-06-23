@@ -5,6 +5,10 @@ import {getPullRequestDiff} from "#/actions/pullrequest.ts";
 import {getCommentsByPullRequestId, insertComment} from "#/actions/inlineComments.ts";
 import {getUserSession} from "#/actions/session.ts";
 
+import { MOCK_DIFF_LINES, MOCK_PR_DATA } from './MOCK-DATA';
+import { useInlineComments } from '#/hooks/useInLineComments';
+import { useRealtimeInlineComments } from '#/hooks/useRealtimeInlineComments';
+import { supabase } from '#/integrations/tanstack-query/supabase-client.ts';
 interface InlineCommentEditorProps {
     onCancel: () => void;
     onSave: (text: string) => void;
@@ -181,6 +185,8 @@ export function CodeViewer({prId, url}: CodeViewerProps) {
                         const lineComments = inlineComments.filter((c: InlineComment) => c.lineId === line.id);
                         const isEditorOpen = activeEditorLineId === line.id;
 
+                    const lineComments = inlineComments.filter(c => c.line_id === line.id);
+                    const isEditorOpen = activeEditorLineId === line.id;
                         if (isHeader) {
                             return (
                                 <div key={line.id} className={bgClass}>
