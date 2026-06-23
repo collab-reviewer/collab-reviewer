@@ -1,12 +1,15 @@
 import {createServerClient, parseCookieHeader, serializeCookieHeader} from "@supabase/ssr";
 
+const URL = process.env.VITE_SUPABASE_URL;
+const KEY = process.env.VITE_SUPABASE_KEY;
+
 export const createServerClientInstance = (requestHeaders: Headers) => {
 
     const responseHeaders = new Headers();
 
     const supabase = createServerClient(
-        import.meta.env.VITE_SUPABASE_URL,
-        import.meta.env.VITE_SUPABASE_KEY,
+        URL!,
+        KEY!,
         {
             cookies: {
                 getAll() {
