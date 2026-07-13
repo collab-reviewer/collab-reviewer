@@ -5,10 +5,10 @@ import {pullRequestKeys} from "#/queries/usePullRequest.ts";
 import type {PullRequest} from "#/types/pull_request.ts";
 
 export function usePullRequestSubscription() {
-    const supabase = createClient();
     const queryClient = useQueryClient();
 
     useEffect(() => {
+        const supabase = createClient();
         const channel = supabase
             .channel('realtime_prs')
             .on(
@@ -34,5 +34,5 @@ export function usePullRequestSubscription() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [supabase, queryClient]);
+    }, [queryClient]);
 }

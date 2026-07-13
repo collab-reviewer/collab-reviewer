@@ -23,16 +23,3 @@ export const checkAuth = createServerFn({method: 'GET'})
             return {isAuthenticated: false, user: null};
         }
     })
-
-
-export const getUserSession = createServerFn({method: 'GET'})
-    .handler(async () => {
-        const request = getRequest();
-        const {supabase} = createServerClientInstance(request.headers);
-
-        const {data: {user}, error} = await supabase.auth.getUser();
-        if (error || !user) {
-            return null;
-        }
-        return user;
-    })

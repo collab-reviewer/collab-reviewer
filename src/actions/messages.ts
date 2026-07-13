@@ -1,29 +1,29 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getRequest} from "@tanstack/react-start/server";
-import {createServerClientInstance} from "#/supabase/server.ts";
+import {createAuthenticatedServerClient} from "#/supabase/server.ts";
+import {z} from "zod";
+import {getUserDisplayName, getUserInitials} from "#/lib/user.ts";
 
-interface CreateMessageInput {
-    prId: number;
-    author: string;
-    avatar: string;
-    content: string;
-    type?: string;
-}
+const createMessageInput = z.object({
+    prId: z.number().int().positive(),
+    content: z.string().trim().min(1).max(10_000),
+    type: z.enum(['comment', 'approve', 'close']).default('comment'),
+});
 
 export const insertMessage = createServerFn({method: 'POST'})
-    .inputValidator((data: CreateMessageInput) => data)
+    .inputValidator(createMessageInput)
     .handler(async ({data}) => {
         const request = getRequest();
-        const {supabase} = createServerClientInstance(request.headers);
+        const {supabase, user} = await createAuthenticatedServerClient(request.headers);
 
         const {data: result, error} = await supabase
             .from('messages')
             .insert({
                 pr_id: data.prId,
-                author: data.author,
-                avatar: data.avatar,
+                author: getUserDisplayName(user),
+                avatar: getUserInitials(user),
                 content: data.content,
-                type: data.type || 'comment',
+                type: data.type,
                 timestamp: new Date().toISOString()
             })
             .select()
@@ -36,15 +36,13 @@ export const insertMessage = createServerFn({method: 'POST'})
         return result;
     });
 
-interface GetMessagesInput {
-    prId: number;
-}
+const getMessagesInput = z.object({prId: z.number().int().positive()});
 
 export const getMessagesByPullRequestId = createServerFn({method: 'GET'})
-    .inputValidator((data: GetMessagesInput) => data)
+    .inputValidator(getMessagesInput)
     .handler(async ({data}) => {
         const request = getRequest();
-        const {supabase} = createServerClientInstance(request.headers);
+        const {supabase} = await createAuthenticatedServerClient(request.headers);
 
         const {data: messages, error} = await supabase
             .from('messages')

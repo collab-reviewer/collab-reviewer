@@ -1,23 +1,17 @@
-import {createServerFn} from "@tanstack/react-start";
-
 interface NotifyDiscordInput {
-    message: string;
+  message: string
 }
 
-export const notifyDiscord = createServerFn({method: 'POST'})
-    .inputValidator((data: NotifyDiscordInput) => data)
-    .handler(async ({data}) => {
-        const response = await fetch("https://n8n.squareprojects.dev/webhook/d30f7c3f-af8e-43ec-9dcf-8b5c5466ef1c", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
+export async function notifyDiscord(data: NotifyDiscordInput) {
+  const webhookUrl = process.env.N8N_WEBHOOK_URL
+  if (!webhookUrl) throw new Error('N8N_WEBHOOK_URL is not configured')
 
-        if (!response.ok) {
-            throw new Error('Failed to notify Discord')
-        }
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+    signal: AbortSignal.timeout(10_000),
+  })
 
-        return
-    })
+  if (!response.ok) throw new Error('Failed to notify Discord')
+}

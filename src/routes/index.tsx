@@ -1,15 +1,14 @@
-import {createFileRoute, redirect} from '@tanstack/react-router';
-import {z} from 'zod';
-import {Sidebar} from '#/components/sidebar';
-import {CodeViewer} from '#/components/code-viewer';
-import {ChatPanel} from '#/components/chat-global';
-import {checkAuth} from "#/actions/session.ts";
-import {pullRequestKeys} from "#/queries/usePullRequest.ts";
-import {getPullRequests} from "#/actions/pullrequest.ts";
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { z } from 'zod'
+import { Sidebar } from '#/components/sidebar'
+import { CodeViewer } from '#/components/code-viewer'
+import { ChatPanel } from '#/components/chat-global'
+import { checkAuth } from '#/actions/session.ts'
+import { pullRequestKeys } from '#/queries/usePullRequest.ts'
+import { getPullRequests } from '#/actions/pullrequest.ts'
 
 const searchSchema = z.object({
     prId: z.string().optional(),
-    url: z.string().optional(),
 });
 
 export const Route = createFileRoute('/')({
@@ -35,13 +34,14 @@ export const Route = createFileRoute('/')({
 });
 
 function IndexComponent() {
-    const {prId, url} = Route.useSearch();
+    const { prId } = Route.useSearch()
+    const { user } = Route.useRouteContext()
 
     return (
-        <div className="flex h-screen w-full font-sans antialiased text-slate-900 bg-white overflow-hidden">
-            <Sidebar/>
-            <CodeViewer prId={prId} url={url}/>
-            <ChatPanel prId={prId}/>
-        </div>
+        <main className="flex h-dvh min-h-[720px] w-full min-w-[1200px] overflow-hidden bg-night font-sans antialiased">
+            <Sidebar activePullRequestId={prId} user={user}/>
+            <CodeViewer prId={prId} user={user}/>
+            <ChatPanel prId={prId} user={user}/>
+        </main>
     );
 }

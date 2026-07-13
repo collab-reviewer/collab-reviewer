@@ -1,7 +1,7 @@
 export interface PullRequest {
-    id: string;
+    id: number;
     title: string;
-    prNumber: string;
+    prNumber: number;
     branch: string;
     status: string;
     author: string;

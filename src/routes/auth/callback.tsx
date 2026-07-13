@@ -7,11 +7,14 @@ export const Route = createFileRoute('/auth/callback')({
             GET: async ({request}) => {
                 const {searchParams, origin} = new URL(request.url);
                 const code = searchParams.get('code');
-                const next = searchParams.get('next') || '/';
+                const requestedNext = searchParams.get('next') || '/';
+                const next = requestedNext.startsWith('/') && !requestedNext.startsWith('//')
+                    ? requestedNext
+                    : '/';
 
 
                 if (!code) {
-                    return Response.redirect(`${origin}/unauthorized`);
+                    return Response.redirect(`${origin}/login`);
                 }
 
                 const {supabase, responseHeaders} = createServerClientInstance(request.headers);
@@ -20,7 +23,7 @@ export const Route = createFileRoute('/auth/callback')({
                 const {error} = await supabase.auth.exchangeCodeForSession(code);
 
                 if (error) {
-                    responseHeaders.set('Location', `${origin}/unauthorized`);
+                    responseHeaders.set('Location', `${origin}/login`);
                     return new Response(null, {status: 302, headers: responseHeaders});
                 }
 

@@ -1,28 +1,28 @@
 import {createServerFn} from "@tanstack/react-start";
 import {getRequest} from "@tanstack/react-start/server";
-import {createServerClientInstance} from "#/supabase/server.ts";
+import {createAuthenticatedServerClient} from "#/supabase/server.ts";
+import {z} from "zod";
+import {getUserDisplayName, getUserInitials} from "#/lib/user.ts";
 
-export interface CreateCommentInput {
-    prId: number;
-    lineId: string;
-    author: string;
-    avatar: string;
-    content: string;
-}
+const createCommentInput = z.object({
+    prId: z.number().int().positive(),
+    lineId: z.string().min(1).max(120),
+    content: z.string().trim().min(1).max(10_000),
+});
 
 export const insertComment = createServerFn({method: 'POST'})
-    .inputValidator((data: CreateCommentInput) => data)
+    .inputValidator(createCommentInput)
     .handler(async ({data}) => {
         const request = getRequest();
-        const {supabase} = createServerClientInstance(request.headers);
+        const {supabase, user} = await createAuthenticatedServerClient(request.headers);
 
         const {data: result, error} = await supabase
             .from('inline_comments')
             .insert({
                 pr_id: data.prId,
                 line_id: data.lineId,
-                author: data.author,
-                avatar: data.avatar,
+                author: getUserDisplayName(user),
+                avatar: getUserInitials(user),
                 content: data.content,
                 timestamp: new Date().toISOString()
             })
@@ -37,15 +37,13 @@ export const insertComment = createServerFn({method: 'POST'})
     });
 
 
-interface GetCommentsInput {
-    prId: number;
-}
+const getCommentsInput = z.object({prId: z.number().int().positive()});
 
 export const getCommentsByPullRequestId = createServerFn({method: 'GET'})
-    .inputValidator((data: GetCommentsInput) => data)
+    .inputValidator(getCommentsInput)
     .handler(async ({data}) => {
         const request = getRequest();
-        const {supabase} = createServerClientInstance(request.headers);
+        const {supabase} = await createAuthenticatedServerClient(request.headers);
 
         const {data: comments, error} = await supabase
             .from('inline_comments')

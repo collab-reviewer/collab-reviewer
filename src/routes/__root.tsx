@@ -5,6 +5,7 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
+import { MotionConfig } from 'motion/react'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
@@ -27,10 +28,36 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'ReviewDeck — Collaborative code review',
+      },
+      {
+        name: 'description',
+        content: 'A focused workspace for reviewing pull requests together.',
+      },
+      {
+        name: 'theme-color',
+        content: '#101918',
       },
     ],
     links: [
+      {
+        rel: 'icon',
+        href: '/reviewdeck-mark.svg',
+        type: 'image/svg+xml',
+      },
+      {
+        rel: 'manifest',
+        href: '/manifest.json',
+      },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossOrigin: 'anonymous',
+      },
       {
         rel: 'stylesheet',
         href: appCss,
@@ -47,7 +74,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body suppressHydrationWarning>
-        {children}
+        <MotionConfig reducedMotion="user">
+          {children}
+        </MotionConfig>
         <TanStackDevtools
           config={{
             position: 'bottom-right',
