@@ -1,4 +1,4 @@
-POST https://n8n.squareprojects.dev/webhook-test/d30f7c3f-af8e-43ec-9dcf-8b5c5466ef1c
+POST https://n8n.squareprojects.dev/webhook/d30f7c3f-af8e-43ec-9dcf-8b5c5466ef1c
 Content-Type: application/json
 
 {
